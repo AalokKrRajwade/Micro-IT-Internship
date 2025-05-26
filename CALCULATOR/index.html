@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculator</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
@@ -13,38 +13,62 @@
     <h1 class="title">Calculator</h1>
 
     <div class="calculator">
-      <input type="text" id="display" readonly />
-      <div class="buttons">
-        <button class="button" onclick="appendValue('7')">7</button>
-        <button class="button" onclick="appendValue('8')">8</button>
-        <button class="button" onclick="appendValue('9')">9</button>
-        <button class="button operator" onclick="appendValue('/')">÷</button>
+      <input type="text" id="display" readonly aria-label="Calculator display" />
+      <div class="buttons" role="group" aria-label="Calculator buttons">
+        <button class="button" onclick="appendValue('7')" aria-label="7">7</button>
+        <button class="button" onclick="appendValue('8')" aria-label="8">8</button>
+        <button class="button" onclick="appendValue('9')" aria-label="9">9</button>
+        <button class="button operator" onclick="appendValue('/')" aria-label="Divide">÷</button>
 
-        <button class="button" onclick="appendValue('4')">4</button>
-        <button class="button" onclick="appendValue('5')">5</button>
-        <button class="button" onclick="appendValue('6')">6</button>
-        <button class="button operator" onclick="appendValue('*')">×</button>
+        <button class="button" onclick="appendValue('4')" aria-label="4">4</button>
+        <button class="button" onclick="appendValue('5')" aria-label="5">5</button>
+        <button class="button" onclick="appendValue('6')" aria-label="6">6</button>
+        <button class="button operator" onclick="appendValue('*')" aria-label="Multiply">×</button>
 
-        <button class="button" onclick="appendValue('1')">1</button>
-        <button class="button" onclick="appendValue('2')">2</button>
-        <button class="button" onclick="appendValue('3')">3</button>
-        <button class="button operator" onclick="appendValue('-')">−</button>
+        <button class="button" onclick="appendValue('1')" aria-label="1">1</button>
+        <button class="button" onclick="appendValue('2')" aria-label="2">2</button>
+        <button class="button" onclick="appendValue('3')" aria-label="3">3</button>
+        <button class="button operator" onclick="appendValue('-')" aria-label="Subtract">−</button>
 
-        <button class="button" onclick="appendValue('0')">0</button>
-        <button class="button" onclick="appendValue('.')">.</button>
-        <button class="button equal" onclick="calculate()">=</button>
-        <button class="button operator" onclick="appendValue('+')">+</button>
+        <button class="button" onclick="appendValue('0')" aria-label="0">0</button>
+        <button class="button" onclick="appendValue('.')" aria-label="Decimal point">.</button>
+        <button class="button equal" onclick="calculate()" aria-label="Equals">=</button>
+        <button class="button operator" onclick="appendValue('+')" aria-label="Add">+</button>
 
-        <button class="button delete" onclick="deleteLast()">⌫</button>
-        <button class="button clear" onclick="clearDisplay()" style="grid-column: span 3;">C</button>
+        <button class="button delete" onclick="deleteLast()" aria-label="Delete last character">⌫</button>
+        <button class="button clear" onclick="clearDisplay()" style="grid-column: span 3;"
+          aria-label="Clear all">C</button>
       </div>
     </div>
   </div>
 
   <script>
-    let display = document.getElementById("display");
+    const display = document.getElementById("display");
 
     function appendValue(value) {
+      const operators = ['+', '-', '*', '/'];
+      const lastChar = display.value.slice(-1);
+
+      if (operators.includes(value)) {
+        if (display.value === "" || operators.includes(lastChar)) {
+          return;
+        }
+      }
+
+      if (value === '.') {
+        let lastOperatorIndex = -1;
+        for (let i = display.value.length - 1; i >= 0; i--) {
+          if (operators.includes(display.value[i])) {
+            lastOperatorIndex = i;
+            break;
+          }
+        }
+        const currentNumber = display.value.slice(lastOperatorIndex + 1);
+        if (currentNumber.includes('.')) {
+          return;
+        }
+      }
+
       display.value += value;
     }
 
@@ -58,11 +82,28 @@
 
     function calculate() {
       try {
-        display.value = eval(display.value);
+        // alternative to eval function
+        display.value = Function('"use strict";return (' + display.value + ')')();
       } catch {
         display.value = "Error";
       }
     }
+
+    document.addEventListener('keydown', (e) => {
+      const allowedKeys = '0123456789+-*/.';
+      if (allowedKeys.includes(e.key)) {
+        appendValue(e.key);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        calculate();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        deleteLast();
+      } else if (e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        clearDisplay();
+      }
+    });
   </script>
 </body>
 
